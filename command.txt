@@ -21,4 +21,4 @@ sbt compile
 sbt assembly
 sbt run
 
-spark-submit --master yarn --deploy-mode client --jars kafka-clients-
+spark-submit --master yarn --deploy-mode client --jars kafka-clients-2.0.0 jar, spark-sql-kafka-0-10_2.11-2.4.6, --class WeatherSrteamingDemo weathermonitoring_2.12-1.0.jar

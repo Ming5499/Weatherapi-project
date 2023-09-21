@@ -1,1 +1,5 @@
 kafka 3.5.0
+scala 2.13.8
+apache airflow 2.7.0
+spark 3.0.3
+hadoop 3.3.0
