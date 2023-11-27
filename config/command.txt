@@ -1,0 +1,26 @@
+sudo apt update
+sudo apt install python3-pip
+sudo apt install python3.10-venv
+python3 -m venv airflow_venv
+sudo pip install pandas
+sudo pip install s3fs
+sudo pip install apache-airflow
+airflow standalone
+sudo apt  install awscli
+aws configure
+aws sts get-session-token
+----------------------------------------------------------
+pip install kafka-python
+# Start the ZooKeeper service
+.\bin\windows\zookeeper-server-start.bat .\config\zookeeper.properties
+# Start the Kafka broker service
+.\bin\windows\kafka-server-start.bat .\config\server.properties
+
+sbt clean
+sbt compile 
+sbt assembly
+sbt run
+
+spark-submit --master yarn --deploy-mode client --jars kafka-clients-2.0.0 jar, spark-sql-kafka-0-10_2.11-2.4.6, --class WeatherSrteamingDemo weathermonitoring_2.12-1.0.jar
+
+./presto --server localhost:8899 --catalog hive -schema default
