@@ -5,6 +5,7 @@ python3 -m venv airflow_venv
 sudo pip install pandas
 sudo pip install s3fs
 sudo pip install apache-airflow
+sudo pip cassandra-driver pyspark
 airflow standalone
 sudo apt  install awscli
 aws configure

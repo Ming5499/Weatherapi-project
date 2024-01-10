@@ -19,8 +19,7 @@ def stream_data():
         if time.time() > current_time + 60: # 1 minute
             break
         try:
-            responese = get_weather_detail()
-            
+            responese = get_weather_detail()            
                 
             #publish and push data
             producer.send('weather',json.dumps(responese).encode('utf-8'))

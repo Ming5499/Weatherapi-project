@@ -5,7 +5,7 @@ from airflow.providers.http.operators.http import SimpleHttpOperator
 import json
 from airflow.operators.python import PythonOperator
 import pandas as pd
-from etls.weather_etl import *
+from etls.weather_etl import transform_load_data
 
 
 default_args = {
@@ -19,14 +19,21 @@ default_args = {
     'retry_delay': timedelta(minutes=2)
 }
 
+
 with DAG('weather_dag',
         default_args=default_args,
         schedule_interval='@daily',
         catchup=False) as dag:
 
+    start = PythonOperator(
+        task_id="start",
+        python_callable = lambda: print("Jobs started"),
+        dag=dag
+    )
+    
     # Check weather API is available (HttpSensor)
-    is_weather_api_ready = HttpSensor(
-        task_id='is_weather_api_ready',
+    check_weather_api = HttpSensor(
+        task_id='check_weather_api',
         http_conn_id='weathermap_api',
         endpoint='/data/2.5/weather?q=hanoi&appid=fce40c3ad84e88aba9f09388dc5ca04e'
     )
@@ -46,7 +53,12 @@ with DAG('weather_dag',
         task_id = 'transform_load_weather_data',
         python_callable=transform_load_data
     )
-    # Define additional tasks as needed for your workflow
+    
+    end = PythonOperator(
+        task_id="end",
+        python_callable = lambda: print("Jobs completed successfully"),
+        dag=dag
+    )
 
     # Set task dependencies
-    is_weather_api_ready >> extract_weather_data >> transform_load_weather_data
+    start >> check_weather_api >> extract_weather_data >> transform_load_weather_data >> end

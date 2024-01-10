@@ -2,7 +2,7 @@ import logging
 from datetime import datetime 
 import cassandra
 from cassandra.cluster import Cluster
-from pyspark.sql.types import StructType, StructField, StringType
+from pyspark.sql.types import StructType, StructField, StringType, DoubleType, IntegerType, TimestampType
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_json, col 
@@ -35,7 +35,7 @@ def create_table(session):
 
 def insert_data(session,**kwargs):
     
-    print('inserting data...')
+    print('Inserting data...')
 
     cityName = kwargs.get('cityName')
     temperature = kwargs.get('temperature')
@@ -44,7 +44,7 @@ def insert_data(session,**kwargs):
 
     try:
         session.execute("""
-            INSERT INTO spark_streams.created_users(cityName, temperature, humidity, creationTime)
+            INSERT INTO spark_streams.weather(cityName, temperature, humidity, creationTime)
                 VALUES (%s, %s, %s, %s, %s)
         """, (cityName, temperature, humidity, creationTime))
         
@@ -84,8 +84,8 @@ def create_spark_connection():
                             .config('spark.cassandra.connection.host','localhost') \
                             .getOrCreate()            
                             
-        s_conn.sparkContext.setLoglevel('ERROR')
-        logging.INFO('Spark connection created successful!')
+        s_conn.sparkContext.setLogLevel('ERROR')
+        logging.info('Spark connection created successful!')
         
     except Exception as e:
         logging.error('Could not create spark session: {e}')
@@ -97,7 +97,7 @@ def create_cassandra_connection():
     
     try:
         #connecting to cassandra cluster 
-        cluster = cluster(['localhost'])
+        cluster = Cluster(['localhost'])
         
         cassadra_session = cluster.connect()
         
@@ -110,12 +110,13 @@ def create_cassandra_connection():
 def create_selection_df_from_kafka(spark_df):
     #Create schema
     schema = StructType([
-        StructField("CityName", StringType(), False),
-        StructField("Temperature", DoubleType(), False),
-        StructField("Humidity", IntegerType(), False),
-        StructField("CreationTime", StringType(), False)
+        StructField("cityName", StringType(), False),
+        StructField("temperature", DoubleType(), False),
+        StructField("humidity", IntegerType(), False),
+        StructField("creationTime", StringType(), False)
     ])
 
+    # Parse the JSON from Kafka using the defined schema
     sel = spark_df.selectExpr("CAST(value AS STRING)") \
         .select(from_json(col('value'), schema).alias('data')).select("data.*")
     print(sel)
@@ -141,7 +142,9 @@ if __name__ == "__main__":
             streaming_query = (selection_df.writeStream.format("org.apache.spark.sql.cassandra")
                                .option('checkpointLocation', '/tmp/checkpoint')
                                .option('keyspace', 'spark_streams')
-                               .option('table', 'created_users')
+                               .option('table', 'weather')
                                .start())
 
             streaming_query.awaitTermination()
+            
+    

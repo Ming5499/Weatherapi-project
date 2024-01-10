@@ -1,5 +1,3 @@
-
-
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
@@ -8,7 +6,7 @@ import org.apache.spark.sql.streaming.Trigger
 object WeatherStreamingDemo {
   def main(args: Array[String]): Unit = {
 
-    println("Weather Monitoring Streaming with Kafka demo started ...")
+    println("Weather Monitoring Streaming with Kafka and Hive started ...")
 
     val KAFKA_TOPIC_NAME_CONS = "weather"
     val KAFKA_BOOTSTRAP_SERVERS_CONS = "localhost:9092"
@@ -16,7 +14,8 @@ object WeatherStreamingDemo {
     System.setProperty("HADOOP_USER_NAME", "hadoop")
 
     val spark = SparkSession.builder.master("local[*]")
-      .appName("Spark Structured Streaming with Kafka demo")
+      .appName("Spark Structured Streaming with Kafka and Hive")
+      .config("spark.sql.warehouse.dir", "/user/hive/warehouse")
       .getOrCreate()
 
     spark.sparkContext.setLogLevel("ERROR")
@@ -69,7 +68,20 @@ object WeatherStreamingDemo {
       .option("checkpointLocation", "data/weather_detail_checkpoint")
       .start()
 
+
+    // Save DataFrame to Hive table
+    weather_detail_df_5.write
+      .format("hive")
+      .mode("overwrite") // Specify the mode: overwrite or append 
+      .saveAsTable("weather_db.your_hive_table_name")
+
+    // Access Hive table
+    val hiveTableDF = spark.sql("SELECT * FROM your_hive_database.your_hive_table_name")
+
+    // Show the contents of the Hive table
+    hiveTableDF.show() 
+      
     query.awaitTermination()
-    println("Weather Monitoring Streaming with Kafka demo Completed")
+    println("Weather Monitoring Streaming with Kafka Completed")
   }
 }

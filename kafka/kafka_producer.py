@@ -3,8 +3,10 @@ import requests
 import json
 import time
 from utils.constants import *
+
+
 kafka_bootstrap_servers = 'localhost:9092'
-kafka_topic_name = 'weather_test'
+kafka_topic_name = 'weather'
 
 producer = KafkaProducer(bootstrap_servers=kafka_bootstrap_servers,
                          value_serializer=lambda v: json.dumps(v).encode('utf-8'))
@@ -21,7 +23,6 @@ def get_weather_detail(full_url):
     humidity = data["main"]["humidity"]
     json_message = {'CityName': city_name, 'Temperature': temp_celsius, 'Humidity': humidity, 'CreatedAt': time.strftime("%Y-%m-%d %H:%M:%S")}
     return json_message
-
 
 
 base_url = "https://api.openweathermap.org/data/2.5/weather?q="
