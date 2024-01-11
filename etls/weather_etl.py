@@ -46,4 +46,4 @@ def transform_load_data(task_instance):
     now=datetime.now()
     dt_string = now.strftime("%d%m%Y%H%M%S")
     dt_string = 'current_weather_data_hanoi_' + dt_string
-    df_data.to_csv(f"s3://{AWS_BUCKET_NAME}/{dt_string}.csv", index=False)
+    df_data.to_csv(f'{dt_string}.csv', index=False)
